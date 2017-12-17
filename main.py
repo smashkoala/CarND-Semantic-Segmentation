@@ -1,4 +1,4 @@
-#In case GPU is not found, execute the following commands.
+#In case GPU is not found in AMI, execute the following commands.
 # https://discussions.udacity.com/t/how-to-run-semantic-segmentation-on-aws/352069/97
 
 import os.path
@@ -62,29 +62,15 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     # TODO: Implement function
     conv1x1 = tf.layers.conv2d(vgg_layer7_out, num_classes, kernel_size=1, strides=(1,1), padding="same", kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3), kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
     vgg_layer7 = tf.layers.conv2d_transpose(conv1x1, num_classes, kernel_size=4, strides=(2,2), padding="same", kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3), kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
-    print("Layer7")
-    print(vgg_layer7.shape)
 
     pool4 = tf.layers.conv2d(vgg_layer4_out, num_classes, kernel_size=1, strides=(1,1), padding="same", kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3), kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
-    print("Pool4")
-    print(pool4.shape)
     combined_layer1 = tf.add(vgg_layer7, pool4)
-    print("Combined_layer1")
-    print(combined_layer1.shape)
 
     fcn_layer2 = tf.layers.conv2d_transpose(combined_layer1, num_classes, kernel_size=4, strides=(2,2), padding="same", kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3), kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
-    print("fcn_layer2")
-    print(fcn_layer2.shape)
 
     pool3 = tf.layers.conv2d(vgg_layer3_out, num_classes, kernel_size=1, strides=(1,1), padding="same", kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3), kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
-    print("pool3")
-    print(pool3.shape)
     combined_layer2 = tf.add(fcn_layer2, pool3)
-    print("Combined_layer2")
-    print(combined_layer2.shape)
     final_out = tf.layers.conv2d_transpose(combined_layer2, num_classes, kernel_size=16, strides=(8,8), padding="same", kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3), kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
-    print("final_out")
-    print(final_out.shape)
     return final_out
 tests.test_layers(layers)
 
