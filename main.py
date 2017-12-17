@@ -1,5 +1,8 @@
 #In case GPU is not found in AMI, execute the following commands.
 # https://discussions.udacity.com/t/how-to-run-semantic-segmentation-on-aws/352069/97
+#In case Illegal instruction error happens when importing TensorFLow
+# https://github.com/udacity/sdc-issue-reports/issues/1186
+#In case tqdm is not found, pip install tqdm
 
 import os.path
 import tensorflow as tf
@@ -90,7 +93,6 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     opt = tf.train.AdamOptimizer(learning_rate=learning_rate)
     cross_entropy_loss = tf.nn.softmax_cross_entropy_with_logits(labels=correct_label, logits=logits)
     loss_op = tf.reduce_mean(cross_entropy_loss)
-    print(loss_op)
     train_op = opt.minimize(loss_op)
     return logits, train_op, cross_entropy_loss
 tests.test_optimize(optimize)
@@ -117,10 +119,12 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
 
     for epoc in range(epochs):
         for image, label in get_batches_fn(batch_size):
-            print("training")
-            sess.run([train_op, cross_entropy_loss], feed_dict={input_image:image, correct_label:label, keep_prob:0.6, learning_rate:.00005})
-tests.test_train_nn(train_nn)
+            _, loss_val = sess.run([train_op, cross_entropy_loss],
+                                    feed_dict={input_image:image, correct_label:label, keep_prob:0.6, learning_rate:.00005})
+            mean_loss = sess.run(tf.reduce_mean(loss_val))
+            print("mean loss = %.5f" % mean_loss)
 
+tests.test_train_nn(train_nn)
 
 def run():
     num_classes = 2
